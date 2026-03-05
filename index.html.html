@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Arc - Architecture & Interior Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --charcoal: #1a1a1a;
+            --warm-white: #f8f6f1;
+            --terracotta: #c76854;
+            --sage: #9ba88d;
+            --stone: #d4cfc4;
+            --gold: #b8965c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--warm-white);
+            color: var(--charcoal);
+            overflow-x: hidden;
+        }
+
+        /* Custom Cursor */
+        body {
+            cursor: none;
+        }
+
+        #cursor {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--terracotta);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.15s ease-out, opacity 0.3s;
+            opacity: 0;
+        }
+
+        #cursor.active {
+            opacity: 1;
+        }
+
+        #cursor.hover {
+            transform: scale(1.8);
+            border-color: var(--gold);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 26, 0.9);
+            z-index: 10002;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--terracotta);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Admin Panel Button */
+        .admin-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: var(--charcoal);
+            color: var(--warm-white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .admin-toggle:hover {
+            background: var(--terracotta);
+            transform: scale(1.1);
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 600px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            overflow-y: auto;
+            transition: right 0.4s ease;
+            padding: 2rem;
+        }
+
+        .admin-panel.active {
+            right: 0;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--stone);
+        }
+
+        .admin-header h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+        }
+
+        .close-admin {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--charcoal);
+        }
+
+        .admin-section {
+            margin-bottom: 3rem;
+        }
+
+        .admin-section h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--terracotta);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--stone);
+            border-radius: 5px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 1rem;
+            background: var(--stone);
+            color: var(--charcoal);
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: var(--sage);
+            color: white;
+        }
+
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .image-preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(214, 48, 49, 0.9);
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-admin {
+            background: var(--terracotta);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn-admin:hover {
+            background: var(--gold);
+            transform: translateY(-2px);
+        }
+
+        .project-list {
+            list-style: none;
+        }
+
+        .project-item-admin {
+            padding: 1rem;
+            border: 1px solid var(--stone);
+            border-radius: 5px;
+            margin-bottom: 0.75rem;
+            background: var(--warm-white);
+        }
+
+        .project-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-item-info strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .project-item-info small {
+            color: var(--sage);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .project-images-admin {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .project-images-admin img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .btn-delete {
+            background: #d63031;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(180deg, rgba(26, 26, 26, 0.8) 0%, transparent 100%);
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            color: var(--warm-white);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--warm-white);
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
+            font-weight: 300;
+            text-transform: uppercase;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--terracotta);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 2;
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 3;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 7rem;
+            font-weight: 300;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: var(--warm-white);
+            opacity: 0;
+            animation: fadeInUp 1.2s ease-out 0.3s forwards;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            font-weight: 200;
+            color: var(--terracotta);
+            opacity: 0;
+            animation: fadeInUp 1.2s ease-out 0.6s forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            animation: fadeIn 1.5s ease-out 1.5s forwards, bounce 2s ease-in-out 2s infinite;
+            z-index: 3;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        .scroll-indicator span {
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--warm-white);
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 40px;
+            background: var(--warm-white);
+            margin: 0 auto;
+        }
+
+        /* Portfolio Grid */
+        .portfolio {
+            padding: 8rem 4rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 4rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 1px;
+            background: var(--terracotta);
+        }
+
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 4rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.75rem 2rem;
+            border: 1px solid var(--charcoal);
+            background: transparent;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 400;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: var(--charcoal);
+            color: var(--warm-white);
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 3rem;
+            margin-top: 5rem;
+        }
+
+        .project-card {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 4/5;
+            background: var(--stone);
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.6s, transform 0.6s;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .project-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .project-card:hover .project-image {
+            transform: scale(1.08);
+        }
+
+        .project-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2.5rem;
+            background: linear-gradient(to top, rgba(26, 26, 26, 0.95) 0%, transparent 100%);
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+        }
+
+        .project-card:hover .project-overlay {
+            transform: translateY(0);
+        }
+
+        .project-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: var(--warm-white);
+            margin-bottom: 0.5rem;
+            font-weight: 400;
+        }
+
+        .project-category {
+            color: var(--stone);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        /* Project Modal */
+        .project-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .project-modal.active {
+            display: flex;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 10001;
+        }
+
+        .modal-images {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .modal-image {
+            max-width: 800px;
+            max-height: 80vh;
+            border-radius: 10px;
+        }
+
+        .modal-nav {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-info {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            color: white;
+        }
+
+        .modal-info h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Clients Section */
+        .clients {
+            padding: 6rem 4rem;
+            background: var(--warm-white);
+            overflow: hidden;
+        }
+
+        .clients-slider-container {
+            position: relative;
+            margin-top: 4rem;
+            overflow: hidden;
+        }
+
+        .clients-slider {
+            display: flex;
+            animation: scroll-clients 30s linear infinite;
+        }
+
+        @keyframes scroll-clients {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .clients-slider:hover {
+            animation-play-state: paused;
+        }
+
+        .client-logo {
+            flex: 0 0 200px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 2rem;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .client-logo:hover {
+            opacity: 1;
+        }
+
+        .client-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: grayscale(100%);
+            transition: filter 0.3s;
+        }
+
+        .client-logo:hover img {
+            filter: grayscale(0%);
+        }
+
+        /* About Section */
+        .about {
+            padding: 8rem 4rem;
+            background: var(--charcoal);
+            color: var(--warm-white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(199, 104, 84, 0.1) 0%, transparent 70%);
+        }
+
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .about h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+        }
+
+        .about p {
+            font-size: 1.1rem;
+            line-height: 2;
+            font-weight: 200;
+            margin-bottom: 1.5rem;
+            color: var(--stone);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+            margin-top: 5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            border-left: 1px solid rgba(212, 207, 196, 0.2);
+            padding: 0 2rem;
+        }
+
+        .stat-item:first-child {
+            border-left: none;
+        }
+
+        .stat-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4rem;
+            color: var(--terracotta);
+            font-weight: 300;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--stone);
+            font-weight: 300;
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 8rem 4rem;
+            text-align: center;
+        }
+
+        .contact h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+        }
+
+        .contact p {
+            font-size: 1.1rem;
+            color: var(--terracotta);
+            letter-spacing: 2px;
+            margin-bottom: 3rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1.2rem 3rem;
+            border: 2px solid var(--charcoal);
+            text-decoration: none;
+            color: var(--charcoal);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 400;
+            position: relative;
+            overflow: hidden;
+            transition: color 0.4s;
+            border-radius: 30px;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--charcoal);
+            transition: left 0.4s ease;
+            z-index: -1;
+        }
+
+        .cta-button:hover {
+            color: var(--warm-white);
+        }
+
+        .cta-button:hover::before {
+            left: 0;
+        }
+
+        footer {
+            padding: 4rem;
+            background: var(--charcoal);
+            color: var(--stone);
+            text-align: center;
+        }
+
+        footer p {
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            font-weight: 200;
+        }
+
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 26, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+        }
+
+        .login-screen.active {
+            display: flex;
+        }
+
+        .login-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-box h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .admin-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .hero h1 {
+                font-size: 3.5rem;
+            }
+
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="cursor"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingText">Processing...</p>
+        </div>
+    </div>
+
+    <!-- Admin Toggle Button -->
+    <button class="admin-toggle" onclick="showLogin()">⚙️</button>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-box">
+            <h2>Admin Login</h2>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="adminPassword" placeholder="Enter admin password">
+            </div>
+            <button class="btn-admin" onclick="login()">Login</button>
+            <button class="btn-admin" style="background: var(--stone); margin-top: 0.5rem;" onclick="closeLogin()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-panel">
+        <div class="admin-header">
+            <h2>Admin Panel</h2>
+            <button class="close-admin" onclick="toggleAdmin()">×</button>
+        </div>
+
+        <!-- Hero Video Upload -->
+        <div class="admin-section">
+            <h3>Hero Background Video</h3>
+            <div class="form-group">
+                <label>Upload Video (Landscape, MP4 recommended)</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="heroVideoInput" accept="video/*" onchange="uploadHeroVideo(event)">
+                    <label for="heroVideoInput" class="file-input-label">Choose Video File</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Project -->
+        <div class="admin-section">
+            <h3>Add New Project</h3>
+            <form id="addProjectForm" onsubmit="addProject(event)">
+                <div class="form-group">
+                    <label>Project Title</label>
+                    <input type="text" id="projectTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="projectCategory" required>
+                        <option value="residential">Residential</option>
+                        <option value="commercial">Commercial</option>
+                        <option value="interior">Interior Design</option>
+                        <option value="architecture">Architecture</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="projectLocation" required>
+                </div>
+                <div class="form-group">
+                    <label>Upload Images (3-4 recommended)</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="projectImages" accept="image/*" multiple onchange="previewProjectImages(event)">
+                        <label for="projectImages" class="file-input-label">Choose Images</label>
+                    </div>
+                    <div id="imagePreview" class="image-preview"></div>
+                </div>
+                <button type="submit" class="btn-admin">Add Project</button>
+            </form>
+        </div>
+
+        <!-- Manage Projects -->
+        <div class="admin-section">
+            <h3>Manage Projects</h3>
+            <ul id="projectList" class="project-list"></ul>
+        </div>
+
+        <!-- Client Logos -->
+        <div class="admin-section">
+            <h3>Client Logos</h3>
+            <div class="form-group">
+                <label>Upload Client Logo</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="clientLogoInput" accept="image/*" onchange="addClientLogo(event)">
+                    <label for="clientLogoInput" class="file-input-label">Choose Logo</label>
+                </div>
+            </div>
+            <div id="clientLogosList" style="margin-top: 1rem;"></div>
+        </div>
+
+        <!-- Export/Import Data -->
+        <div class="admin-section" style="border-top: 2px solid var(--stone); padding-top: 2rem;">
+            <h3>📦 Backup & Restore</h3>
+            <p style="font-size: 0.9rem; color: var(--sage); margin-bottom: 1rem;">
+                Export your data before re-uploading to Netlify. Import it back after upload to restore everything.
+            </p>
+            <button class="btn-admin" onclick="exportData()" style="background: var(--sage);">
+                ⬇️ Export All Data (Download Backup)
+            </button>
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Import Data from Backup</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="importDataInput" accept=".json" onchange="importData(event)">
+                    <label for="importDataInput" class="file-input-label">Choose Backup File</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="logo">STUDIO ARC</div>
+        <ul class="nav-links">
+            <li><a href="#portfolio">Portfolio</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <video id="heroVideo" class="hero-video" autoplay muted loop playsinline>
+            <source src="" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Spaces that<br>Inspire</h1>
+            <p>ARCHITECTURE · INTERIOR DESIGN</p>
+        </div>
+        <div class="scroll-indicator">
+            <span>Scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <section id="portfolio" class="portfolio">
+        <h2 class="section-title">Selected Works</h2>
+        
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All Projects</button>
+            <button class="filter-btn" data-filter="residential">Residential</button>
+            <button class="filter-btn" data-filter="commercial">Commercial</button>
+            <button class="filter-btn" data-filter="interior">Interior Design</button>
+            <button class="filter-btn" data-filter="architecture">Architecture</button>
+        </div>
+
+        <div id="portfolioGrid" class="portfolio-grid"></div>
+    </section>
+
+    <!-- Project Modal -->
+    <div id="projectModal" class="project-modal">
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <div style="position: relative;">
+            <div class="modal-images">
+                <button class="modal-nav" onclick="previousImage()">‹</button>
+                <img id="modalImage" class="modal-image" src="" alt="">
+                <button class="modal-nav" onclick="nextImage()">›</button>
+            </div>
+            <div class="modal-info">
+                <h3 id="modalTitle"></h3>
+                <p id="modalCategory"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clients Section -->
+    <section class="clients">
+        <h2 class="section-title">Our Clients</h2>
+        <div class="clients-slider-container">
+            <div id="clientsSlider" class="clients-slider"></div>
+        </div>
+    </section>
+
+    <section id="about" class="about">
+        <div class="about-content">
+            <h2>Crafting Timeless Spaces</h2>
+            <p>We believe that great design transcends trends. Our approach combines architectural precision with artistic sensibility, creating spaces that resonate with both purpose and beauty.</p>
+            <p>Every project is a unique dialogue between site, structure, and soul. We listen deeply to understand your vision, then craft environments that elevate everyday living into something extraordinary.</p>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number">150+</span>
+                    <span class="stat-label">Projects Completed</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">25+</span>
+                    <span class="stat-label">Awards Won</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">15</span>
+                    <span class="stat-label">Years Experience</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact">
+        <h2>Let's Create Together</h2>
+        <p>READY TO START YOUR PROJECT?</p>
+        <a href="mailto:hello@studioarc.com" class="cta-button">Get in Touch</a>
+    </section>
+
+    <footer>
+        <p>© 2024 Studio Arc. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        const ADMIN_PASSWORD = 'admin123';
+        let db;
+        let currentProjectImages = [];
+        let currentModalProject = null;
+        let currentImageIndex = 0;
+
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('StudioArcDB', 1);
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    
+                    if (!db.objectStoreNames.contains('projects')) {
+                        db.createObjectStore('projects', { keyPath: 'id', autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains('logos')) {
+                        db.createObjectStore('logos', { keyPath: 'id', autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains('settings')) {
+                        db.createObjectStore('settings', { keyPath: 'key' });
+                    }
+                };
+            });
+        }
+
+        // Show/Hide Loading
+        function showLoading(text = 'Processing...') {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        // Compress image
+        function compressImage(file, maxWidth = 1920, quality = 0.8) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = (height * maxWidth) / width;
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob(
+                            (blob) => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => resolve(reader.result);
+                                reader.readAsDataURL(blob);
+                            },
+                            'image/jpeg',
+                            quality
+                        );
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Hero Video Upload
+        async function uploadHeroVideo(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showLoading('Processing video...');
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const transaction = db.transaction(['settings'], 'readwrite');
+                const store = transaction.objectStore('settings');
+                
+                await store.put({ key: 'heroVideo', data: e.target.result });
+                
+                loadHeroVideo();
+                hideLoading();
+                alert('Video uploaded successfully!');
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        async function loadHeroVideo() {
+            const transaction = db.transaction(['settings'], 'readonly');
+            const store = transaction.objectStore('settings');
+            const request = store.get('heroVideo');
+
+            request.onsuccess = () => {
+                if (request.result) {
+                    const video = document.getElementById('heroVideo');
+                    video.src = request.result.data;
+                    video.load();
+                }
+            };
+        }
+
+        // Project Images Preview
+        async function previewProjectImages(event) {
+            const files = event.target.files;
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            currentProjectImages = [];
+
+            showLoading('Compressing images...');
+
+            for (let file of files) {
+                const compressed = await compressImage(file);
+                currentProjectImages.push(compressed);
+
+                const div = document.createElement('div');
+                div.className = 'image-preview-item';
+                div.innerHTML = `
+                    <img src="${compressed}" alt="Preview">
+                    <button class="remove-image" type="button" onclick="removePreviewImage(${currentProjectImages.length - 1})">×</button>
+                `;
+                preview.appendChild(div);
+            }
+
+            hideLoading();
+        }
+
+        function removePreviewImage(index) {
+            currentProjectImages.splice(index, 1);
+            const preview = document.getElementById('imagePreview');
+            preview.children[index].remove();
+        }
+
+        // Add Project
+        async function addProject(event) {
+            event.preventDefault();
+
+            if (currentProjectImages.length === 0) {
+                alert('Please upload at least one image!');
+                return;
+            }
+
+            showLoading('Saving project...');
+
+            const project = {
+                title: document.getElementById('projectTitle').value,
+                category: document.getElementById('projectCategory').value,
+                location: document.getElementById('projectLocation').value,
+                images: currentProjectImages,
+                createdAt: Date.now()
+            };
+
+            const transaction = db.transaction(['projects'], 'readwrite');
+            const store = transaction.objectStore('projects');
+            await store.add(project);
+
+            document.getElementById('addProjectForm').reset();
+            document.getElementById('imagePreview').innerHTML = '';
+            currentProjectImages = [];
+
+            await loadProjects();
+            hideLoading();
+            alert('Project added successfully!');
+        }
+
+        // Load Projects
+        async function loadProjects() {
+            const transaction = db.transaction(['projects'], 'readonly');
+            const store = transaction.objectStore('projects');
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                const projects = request.result.reverse();
+                const grid = document.getElementById('portfolioGrid');
+                grid.innerHTML = '';
+
+                projects.forEach(project => {
+                    const card = document.createElement('div');
+                    card.className = 'project-card';
+                    card.setAttribute('data-category', project.category);
+                    card.onclick = () => openModal(project);
+                    card.innerHTML = `
+                        <img src="${project.images[0]}" alt="${project.title}" class="project-image">
+                        <div class="project-overlay">
+                            <h3 class="project-title">${project.title}</h3>
+                            <p class="project-category">${project.category} · ${project.location}</p>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                setTimeout(() => {
+                    document.querySelectorAll('.project-card').forEach(card => {
+                        card.classList.add('visible');
+                    });
+                }, 100);
+
+                updateAdminList(projects);
+            };
+        }
+
+        // Modal Functions
+        function openModal(project) {
+            currentModalProject = project;
+            currentImageIndex = 0;
+            document.getElementById('modalTitle').textContent = project.title;
+            document.getElementById('modalCategory').textContent = `${project.category} · ${project.location}`;
+            document.getElementById('modalImage').src = project.images[0];
+            document.getElementById('projectModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('projectModal').classList.remove('active');
+        }
+
+        function nextImage() {
+            if (currentModalProject && currentModalProject.images.length > 1) {
+                currentImageIndex = (currentImageIndex + 1) % currentModalProject.images.length;
+                document.getElementById('modalImage').src = currentModalProject.images[currentImageIndex];
+            }
+        }
+
+        function previousImage() {
+            if (currentModalProject && currentModalProject.images.length > 1) {
+                currentImageIndex = (currentImageIndex - 1 + currentModalProject.images.length) % currentModalProject.images.length;
+                document.getElementById('modalImage').src = currentModalProject.images[currentImageIndex];
+            }
+        }
+
+        // Update Admin List
+        function updateAdminList(projects) {
+            const list = document.getElementById('projectList');
+            list.innerHTML = '';
+
+            projects.forEach(project => {
+                const item = document.createElement('li');
+                item.className = 'project-item-admin';
+                
+                const imagesHtml = project.images.map(img => `<img src="${img}" alt="${project.title}">`).join('');
+                
+                item.innerHTML = `
+                    <div class="project-item-header">
+                        <div class="project-item-info">
+                            <strong>${project.title}</strong>
+                            <small>${project.category} · ${project.location} · ${project.images.length} images</small>
+                        </div>
+                        <button class="btn-delete" onclick="deleteProject(${project.id})">Delete</button>
+                    </div>
+                    <div class="project-images-admin">${imagesHtml}</div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Delete Project
+        async function deleteProject(id) {
+            if (!confirm('Are you sure you want to delete this project?')) return;
+
+            showLoading('Deleting project...');
+
+            const transaction = db.transaction(['projects'], 'readwrite');
+            const store = transaction.objectStore('projects');
+            await store.delete(id);
+
+            await loadProjects();
+            hideLoading();
+        }
+
+        // Client Logos
+        async function addClientLogo(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showLoading('Compressing logo...');
+
+            const compressed = await compressImage(file, 800, 0.9);
+
+            const transaction = db.transaction(['logos'], 'readwrite');
+            const store = transaction.objectStore('logos');
+            await store.add({ data: compressed, createdAt: Date.now() });
+
+            await loadClientLogos();
+            hideLoading();
+            alert('Client logo added successfully!');
+            event.target.value = '';
+        }
+
+        async function loadClientLogos() {
+            const transaction = db.transaction(['logos'], 'readonly');
+            const store = transaction.objectStore('logos');
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                const logos = request.result;
+                const slider = document.getElementById('clientsSlider');
+                const allLogos = [...logos, ...logos];
+                
+                slider.innerHTML = allLogos.map(logo => `
+                    <div class="client-logo">
+                        <img src="${logo.data}" alt="Client Logo">
+                    </div>
+                `).join('');
+
+                // Update admin list
+                const adminList = document.getElementById('clientLogosList');
+                adminList.innerHTML = logos.map(logo => `
+                    <div class="project-item-admin" style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        <img src="${logo.data}" style="width: 80px; height: 80px; object-fit: contain;">
+                        <button class="btn-delete" onclick="deleteClientLogo(${logo.id})">Delete</button>
+                    </div>
+                `).join('');
+            };
+        }
+
+        async function deleteClientLogo(id) {
+            if (!confirm('Delete this client logo?')) return;
+
+            showLoading('Deleting logo...');
+
+            const transaction = db.transaction(['logos'], 'readwrite');
+            const store = transaction.objectStore('logos');
+            await store.delete(id);
+
+            await loadClientLogos();
+            hideLoading();
+        }
+
+        // Login
+        function showLogin() {
+            document.getElementById('loginScreen').classList.add('active');
+        }
+
+        function closeLogin() {
+            document.getElementById('loginScreen').classList.remove('active');
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function login() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                closeLogin();
+                toggleAdmin();
+            } else {
+                alert('Incorrect password!');
+            }
+        }
+
+        function toggleAdmin() {
+            document.getElementById('adminPanel').classList.toggle('active');
+        }
+
+        // Filter
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                const filter = button.getAttribute('data-filter');
+                const cards = document.querySelectorAll('.project-card');
+
+                cards.forEach(card => {
+                    card.style.display = 'none';
+                    card.classList.remove('visible');
+                    
+                    setTimeout(() => {
+                        if (filter === 'all' || card.getAttribute('data-category') === filter) {
+                            card.style.display = 'block';
+                            setTimeout(() => card.classList.add('visible'), 50);
+                        }
+                    }, 300);
+                });
+            });
+        });
+
+        // Custom Cursor
+        const cursor = document.getElementById('cursor');
+        let mouseX = 0, mouseY = 0;
+        let cursorX = 0, cursorY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursor.classList.add('active');
+        });
+
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.15;
+            cursorY += (mouseY - cursorY) * 0.15;
+            cursor.style.left = cursorX - 20 + 'px';
+            cursor.style.top = cursorY - 20 + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        const hoverElements = document.querySelectorAll('a, .project-card, button, input, select');
+        hoverElements.forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Close modal with keys
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+            if (document.getElementById('projectModal').classList.contains('active')) {
+                if (e.key === 'ArrowRight') nextImage();
+                if (e.key === 'ArrowLeft') previousImage();
+            }
+        });
+
+        // Export Data
+        async function exportData() {
+            showLoading('Exporting all data...');
+
+            const data = {
+                projects: [],
+                logos: [],
+                settings: {}
+            };
+
+            // Export projects
+            const projectsTx = db.transaction(['projects'], 'readonly');
+            const projectsStore = projectsTx.objectStore('projects');
+            const projectsRequest = projectsStore.getAll();
+
+            projectsRequest.onsuccess = async () => {
+                data.projects = projectsRequest.result;
+
+                // Export logos
+                const logosTx = db.transaction(['logos'], 'readonly');
+                const logosStore = logosTx.objectStore('logos');
+                const logosRequest = logosStore.getAll();
+
+                logosRequest.onsuccess = async () => {
+                    data.logos = logosRequest.result;
+
+                    // Export settings
+                    const settingsTx = db.transaction(['settings'], 'readonly');
+                    const settingsStore = settingsTx.objectStore('settings');
+                    const settingsRequest = settingsStore.get('heroVideo');
+
+                    settingsRequest.onsuccess = () => {
+                        if (settingsRequest.result) {
+                            data.settings.heroVideo = settingsRequest.result.data;
+                        }
+
+                        // Create download
+                        const dataStr = JSON.stringify(data);
+                        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                        const url = URL.createObjectURL(dataBlob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `studioarc-backup-${new Date().toISOString().split('T')[0]}.json`;
+                        link.click();
+
+                        hideLoading();
+                        alert('✅ Data exported! Save this file before re-uploading to Netlify.');
+                    };
+                };
+            };
+        }
+
+        // Import Data
+        async function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showLoading('Importing data...');
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    // Clear existing data
+                    await clearAllData();
+
+                    // Import projects
+                    if (data.projects && data.projects.length > 0) {
+                        const projectsTx = db.transaction(['projects'], 'readwrite');
+                        const projectsStore = projectsTx.objectStore('projects');
+                        for (let project of data.projects) {
+                            await projectsStore.add(project);
+                        }
+                    }
+
+                    // Import logos
+                    if (data.logos && data.logos.length > 0) {
+                        const logosTx = db.transaction(['logos'], 'readwrite');
+                        const logosStore = logosTx.objectStore('logos');
+                        for (let logo of data.logos) {
+                            await logosStore.add(logo);
+                        }
+                    }
+
+                    // Import settings
+                    if (data.settings && data.settings.heroVideo) {
+                        const settingsTx = db.transaction(['settings'], 'readwrite');
+                        const settingsStore = settingsTx.objectStore('settings');
+                        await settingsStore.put({ key: 'heroVideo', data: data.settings.heroVideo });
+                    }
+
+                    // Reload everything
+                    await loadProjects();
+                    await loadHeroVideo();
+                    await loadClientLogos();
+
+                    hideLoading();
+                    alert('✅ Data imported successfully! All your content is restored.');
+                } catch (error) {
+                    hideLoading();
+                    alert('❌ Error importing data: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // Clear all data
+        function clearAllData() {
+            return new Promise((resolve) => {
+                const projectsTx = db.transaction(['projects'], 'readwrite');
+                const projectsStore = projectsTx.objectStore('projects');
+                projectsStore.clear();
+
+                const logosTx = db.transaction(['logos'], 'readwrite');
+                const logosStore = logosTx.objectStore('logos');
+                logosStore.clear();
+
+                const settingsTx = db.transaction(['settings'], 'readwrite');
+                const settingsStore = settingsTx.objectStore('settings');
+                settingsStore.clear();
+
+                resolve();
+            });
+        }
+
+        // Initialize
+        window.addEventListener('load', async () => {
+            await initDB();
+            await loadProjects();
+            await loadHeroVideo();
+            await loadClientLogos();
+        });
+    </script>
+</body>
+</html>
